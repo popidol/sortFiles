@@ -6,10 +6,11 @@ import info
 import time
 import settings
 
+
 def main():
     def start():
-        q = 0
-        w = 0
+        all_required_files = 0
+        processed_files = 0
 
         def sort_format_directory(directory, extension):
             arr = []
@@ -25,39 +26,43 @@ def main():
             print(f"файлов с нужным расширением - {count}")
             print(f"файлов всего - {count_full}")
 
-            nonlocal q
-            q = count_full
+            nonlocal all_required_files
+            all_required_files = count
             return arr
 
-
         def copy_files_new_directory(old_directories, new_directory):
-            min_data = None
 
             if os.path.exists(new_directory) != True: os.mkdir(new_directory)
 
             for i in range(len(old_directories)):
+                min_data = None
 
                 file = old_directories[i]
                 if (file.lower().find('jpg') != -1) or (file.lower().find('jpeg') != -1):
-                    info_file = info.info_file_exif(old_directories[i], False)
-                    if ('datetime' in info_file) == True:
-                        min_data = comparison_date(info_file.get('datetime'), min_data)
-                    if ('datetime_original' in info_file) == True:
-                        min_data = comparison_date(info_file.get('datetime_original'), min_data)
-                    if ('datetime_digitized' in info_file) == True:
-                        min_data = comparison_date(info_file.get('datetime_digitized'), min_data)
-                    if ('gps_datestamp' in info_file) == True:
-                        min_data = comparison_date(info_file.get('gps_datestamp'), min_data)
+                    # надо написать вызов только с нужными ключами
+                    try:
+                        info_file = info.info_file_exif(old_directories[i], False)
+                        if ('datetime' in info_file) == True:
+                            min_data = comparison_date(info_file.get('datetime'), min_data)
+                        if ('datetime_original' in info_file) == True:
+                            min_data = comparison_date(info_file.get('datetime_original'), min_data)
+                        if ('datetime_digitized' in info_file) == True:
+                            min_data = comparison_date(info_file.get('datetime_digitized'), min_data)
+                        if ('gps_datestamp' in info_file) == True:
+                            min_data = comparison_date(info_file.get('gps_datestamp'), min_data)
+                    except:
+                        min_data = None
 
-                info_file = info.info_file_pymediainfo(old_directories[i], False)
                 if min_data == None:
+                    #нужно переписать в словарь только с этими ключами
+                    info_file = info.info_file_pymediainfo(old_directories[i], False)
                     for j in range(0, len(info_file) - 2, 2):
                         if info_file[j] == ('file_creation_date' or \
-                                    'file_creation_date__local' or \
-                                'file_last_modification_date' or \
-                                'file_last_modification_date__local' or \
-                                'encoded_date' or \
-                                'tagged_date'):
+                                            'file_creation_date__local' or \
+                                            'file_last_modification_date' or \
+                                            'file_last_modification_date__local' or \
+                                            'encoded_date' or \
+                                            'tagged_date'):
                             if (info_file[j + 1][0] == 'U'):
                                 info_file[j + 1] = info_file[j + 1].replace("UTC ", "")
                             if (min_data == None):
@@ -65,36 +70,10 @@ def main():
                             else:
                                 min_data = comparison_date(min_data, info_file[j + 1])
 
-
                 if (min_data != None):
                     year = min_data[0:4]
                     month = min_data[5:7]
-                    if month == "01":
-                        zz = "январь"
-                    elif month == "02":
-                        zz = "февраль"
-                    elif month == "03":
-                        zz = "март"
-                    elif month == "04":
-                        zz = "апрель"
-                    elif month == "05":
-                        zz = "май"
-                    elif month == "06":
-                        zz = "июнь"
-                    elif month == "07":
-                        zz = "июль"
-                    elif month == "08":
-                        zz = "август"
-                    elif month == "09":
-                        zz = "сентябрь"
-                    elif month == "10":
-                        zz = "октябрь"
-                    elif month == "11":
-                        zz = "ноябрь"
-                    elif month == "12":
-                        zz = "декабрь"
-                    else:
-                        zz = "no"
+                    zz = info.dictionary_of_months.get(month)
                     lam_directory = new_directory + '\\' + year
                     if (os.path.exists(lam_directory) != True):
                         os.mkdir(new_directory + '/' + year)
@@ -102,7 +81,8 @@ def main():
                     if (os.path.exists(lam_directory) != True):
                         os.mkdir(new_directory + '/' + year + '/' + zz)
                 lam_directory = new_directory + '\\' + year + '\\' + zz
-                name_file = (old_directories[i].split('\\'))[len(old_directories[i].split('\\'))-1]
+                name_file = (old_directories[i].split('\\'))[len(old_directories[i].split('\\')) - 1]
+
                 def copy():
                     nonlocal lam_directory
                     if os.path.exists(lam_directory + '\\' + name_file):
@@ -115,13 +95,15 @@ def main():
                 copy()
 
                 shutil.copy2(old_directories[i], lam_directory)
-                if settings.del_file: os.remove(old_directories[i])
-                if settings.print_consol: plus()
+                if settings.del_file:
+                    os.remove(old_directories[i])
+                if settings.print_consol:
+                    plus()
 
         def comparison_date(date1, date2):
+            # надо переисать эту штуку в человеческий вариант
             if (date1 == None and date2 != None): return date2
             if (date2 == None and date1 != None): return date1
-            if (date1 == None and date2 == None): return None
             date = ""
             year_array = []
             year = ""
@@ -180,39 +162,25 @@ def main():
             return date
 
         def plus():
-            nonlocal q
-            nonlocal w
-            w += 1
-            print(f'Обработано файлов {w}/{q}')
+            nonlocal all_required_files
+            nonlocal processed_files
+            processed_files += 1
+            print(f'Обработано файлов {processed_files}/{all_required_files}')
 
-
-        for info_file in (np.array_split(sort_format_directory(settings.d1, settings.extension), settings.thread)):
-            b = list(info_file)
-            th1 = Thread(target=copy_files_new_directory, args=(b, settings.d2))
-            th1.start()
-        th1.join()
+        if settings.thread == 1:
+            copy_files_new_directory(sort_format_directory(settings.d1, settings.extension), settings.d2)
+        elif settings.thread > 1:
+            for info_file in (np.array_split(sort_format_directory(settings.d1, settings.extension), settings.thread)):
+                b = list(info_file)
+                th1 = Thread(target=copy_files_new_directory, args=(b, settings.d2))
+                th1.start()
+            th1.join()
+        else:
+            print('Недопустимое кол-во потоков')
 
     t1 = time.time()
     start()
     t2 = time.time()
-    day = 0
-    hour = 0
-    min = 0
-    sec = int(t2-t1)
-
-    while sec//(24*60*60) != 0:
-        day+=1
-        sec=sec//(24*60*60)
-    while sec//(60*60) != 0:
-        hour+=1
-        sec=sec//(60*60)
-    while sec//(60) != 0:
-        min+=1
-        sec=sec//(60)
-
-    if settings.print_time_finish:
-        print(f"Программа работала\n Дней - {day}\nЧасов - {hour}\nМинут - {min}\nСекунд - {sec}")
-
-
+    info.time_counter(t1, t2)
 
 

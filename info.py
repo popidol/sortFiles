@@ -2,6 +2,20 @@ from exif import Image
 import piexif
 from pymediainfo import MediaInfo
 
+import settings
+
+dictionary_of_months = {'01': 'январь',
+                        '02': 'февраль',
+                        '03': 'март',
+                        '04': 'апрель',
+                        '05': 'май',
+                        '06': 'июнь',
+                        '07': 'июль',
+                        '08': 'август',
+                        '09': 'сентябрь',
+                        '10': 'октябрь',
+                        '11': 'ноябрь',
+                        '12': 'декабрь'}
 
 def info_file_exif(directory, prin):
     img = Image(directory)
@@ -61,26 +75,21 @@ def info_file_pil(directory, prin):
             data = data.decode()
         print(f"{tag}: {data}")
 
-# d1 =r"D:\photo\jpeg\IMG_20180811_140540-01.jpeg"
-#
-# try:
-#     print('1--------------------------------------------------------------------')
-#     info_file_exif(d1, True)
-# except:
-#     print('1-ошибка-------------------------------------------------------------------')
-# try:
-#     print('2--------------------------------------------------------------------')
-#     info_file_pymediainfo(d1, True)
-# except:
-#     print('2-ошибка-------------------------------------------------------------------')
-# try:
-#     print('3--------------------------------------------------------------------')
-#     info_file_piexif(d1, True)
-# except:
-#     print('3-ошибка-------------------------------------------------------------------')
-# try:
-#     print('4--------------------------------------------------------------------')
-#     info_file_pil(d1, True)
-# except:
-#     print('4-ошибка-------------------------------------------------------------------')
+def time_counter(start, end):
+    day = 0
+    hour = 0
+    min = 0
+    sec = int(end - start)
+
+    while sec // (24 * 60 * 60) != 0:
+        day += 1
+        sec = sec // (24 * 60 * 60)
+    while sec // (60 * 60) != 0:
+        hour += 1
+        sec = sec // (60 * 60)
+    while sec // (60) != 0:
+        min += 1
+        sec = sec // (60)
+    if settings.print_time_finish:
+        print(f"Программа работала\n Дней - {day}\nЧасов - {hour}\nМинут - {min}\nСекунд - {sec}")
 
