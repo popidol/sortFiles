@@ -1,7 +1,6 @@
 from exif import Image
-import piexif
+# import piexif
 from pymediainfo import MediaInfo
-
 import settings
 
 dictionary_of_months = {'01': 'январь',
@@ -37,6 +36,7 @@ def info_file_exif(directory, prin):
 
 def info_file_pymediainfo(directory, prin):
     arry = []
+    print((MediaInfo.parse(directory).to_data().get("tracks")))
     count = len(MediaInfo.parse(directory).to_data().get("tracks"))
     for j in range(count):
         for i in range(len(MediaInfo.parse(directory).to_data().get("tracks")[j].items())):
@@ -75,21 +75,11 @@ def info_file_pil(directory, prin):
             data = data.decode()
         print(f"{tag}: {data}")
 
-def time_counter(start, end):
-    day = 0
-    hour = 0
-    min = 0
-    sec = int(end - start)
+dir = r'F:\все\архив фотографий\ФОТО архив\Жек\P1010452.JPG'
+info_file_pymediainfo(dir, True)
+# info_file_pil(dir, True) #выдает ошибку и видит только 1980 год
+# info_file_exif(dir, True) #видит только 1980 год но без ошибки
+# info_file_piexif(dir, True)
 
-    while sec // (24 * 60 * 60) != 0:
-        day += 1
-        sec = sec // (24 * 60 * 60)
-    while sec // (60 * 60) != 0:
-        hour += 1
-        sec = sec // (60 * 60)
-    while sec // (60) != 0:
-        min += 1
-        sec = sec // (60)
-    if settings.print_time_finish:
-        print(f"Программа работала\n Дней - {day}\nЧасов - {hour}\nМинут - {min}\nСекунд - {sec}")
+
 
